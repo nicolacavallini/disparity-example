@@ -54,6 +54,29 @@ def from_mask_to_pixels_ids(mask):
 
     return pixels
 
+def define_patches_to_match(left,right,semi_stencil,
+                           edge_points,right_rows,right_cols):
+    left_patches = get_patch_list(left,semi_stencil)
+    right_patches = get_patch_list(right,semi_stencil)
+
+
+    for i,j in zip(edge_points[0],edge_points[1]):
+        left_patches[i][j] = noralize_patch(left_patches[i][j])
+        stdout.write("\r left normalizing... %d, of %d" % (i,np.amax(edge_points[0])))
+        stdout.flush()
+    stdout.write("\n")
+
+    for i in right_rows:
+        for j in right_cols:
+            right_patches[i][j] = noralize_patch(right_patches[i][j])
+        stdout.write("\r right normalizing... %d, of %d" % (i,np.amax(right_rows)))
+        stdout.flush()
+    stdout.write("\n")
+
+    return left_patches,right_patches
+
+
+
 def evaluate_matches(mask_left,edge_points,
                      left_patches,right_patches):
     match_points = np.zeros(mask_left.shape,dtype=np.int32)
@@ -85,11 +108,33 @@ if __name__ == "__main__":
     left_rows,left_cols = get_roi(left)
     right_rows,right_cols = get_roi(right)
 
-    left_sobel = filters.sobel(left)
-    right_sobel = filters.sobel(right)
+    # kernel = np.array([[1, 1, 0, -1, -1],
+    #                    [2, 2, 0, -2, -2],
+    #                    [2, 2, 0, -2, -2],
+    #                    [2, 2, 0, -2, -2],
+    #                    [1, 1, 0, -1, -1]])
+
+    # kernel = np.array([[1, 0, -1],
+    #                    [2, 0, -2],
+    #                    [1, 0, -1]])
+
+    left_sobel = filters.sobel_v(left)
+
+    right_sobel = filters.sobel_v(right)
+
 
     mask_left = mask_sobel(left_sobel)
     mask_right = mask_sobel(right_sobel)
+
+    # plt.subplot(2,2,1)
+    # plt.imshow(left_sobel,cmap='winter')
+    # plt.subplot(2,2,2)
+    # plt.imshow(right_sobel,cmap='winter')
+    # plt.subplot(2,2,3)
+    # plt.imshow(mask_left,cmap='winter')
+    # plt.subplot(2,2,4)
+    # plt.imshow(mask_right,cmap='winter')
+    # plt.show()
 
     edge_points = np.where(mask_left==1)
 
@@ -97,30 +142,14 @@ if __name__ == "__main__":
 
     semi_stencil = 5
     #
-    left_patches = get_patch_list(left,semi_stencil)
-    right_patches = get_patch_list(right,semi_stencil)
 
+    left_patches,right_patches = define_patches_to_match(
+                                 left,right,semi_stencil,
+                                 edge_points,right_rows,right_cols)
 
-    for i,j in zip(edge_points[0],edge_points[1]):
-        left_patches[i][j] = noralize_patch(left_patches[i][j])
-        stdout.write("\r left normalizing... %d, of %d" % (i,np.amax(edge_points[0])))
-        stdout.flush()
-    stdout.write("\n")
-
-    for i in right_rows:
-        for j in right_cols:
-            right_patches[i][j] = noralize_patch(right_patches[i][j])
-        stdout.write("\r right normalizing... %d, of %d" % (i,np.amax(right_rows)))
-        stdout.flush()
-    stdout.write("\n")
 
     match_points = evaluate_matches(mask_left,edge_points,
                          left_patches,right_patches)
-
-
-
-    #print i,j
-
     plt.subplot(2,2,1)
     plt.imshow(mask_left,cmap='winter')
     plt.subplot(2,2,2)
@@ -130,47 +159,3 @@ if __name__ == "__main__":
     plt.subplot(2,2,4)
     plt.imshow(match_points,cmap='cool')
     plt.show()
-
-    #pixels =  from_mask_to_pixels_ids(mask_left)
-
-
-    # print left.shape
-    #
-    # right = get_roi(right)
-    # right = transform.resize(right,left.shape)
-    # print right.shape
-
-    #left = left[rows,cols]
-
-    #plt.plot(mrk)
-    #plt.show()
-
-    # disparity = np.zeros(left.shape)
-
-    # print len(left_patches), len(left_patches[0])
-    # print len(right_patches), len(right_patches[0])
-    #
-
-    #
-
-    # disparity = np.zeros(left.shape)
-    #
-
-
-        # stdout.write("\r evaluating disparity ... %d, of %d" % (i,np.amax(rows)))
-        # stdout.flush()
-    # plt.imshow(disparity)
-    # plt.show()
-
-
-
-    # plt.subplot(2,2,1)
-    # plt.imshow(left_patches[224][250])
-    # plt.subplot(2,2,2)
-    # plt.imshow(right_patches[224][96])
-    #
-    # plt.subplot(2,2,3)
-    # plt.imshow(left)
-    # plt.subplot(2,2,4)
-    # plt.imshow(right)
-    # plt.show()

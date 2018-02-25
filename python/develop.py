@@ -1,4 +1,4 @@
-#from __future__ import division
+    #from __future__ import division
 #import scipy as scp
 from skimage import data, io, filters, transform
 import numpy as np
@@ -9,7 +9,7 @@ from sys import stdout
 
 
 def read_image(lr,ref_id):
-    img_name = "./stereo_imgs/rectified_" + lr + "_" + ref_id +".png"
+    img_name = "../stereo_imgs/rectified_" + lr + "_" + ref_id +".png"
     img = io.imread(img_name,as_grey=True)
     #img[np.where(img==0)]=1
     return img

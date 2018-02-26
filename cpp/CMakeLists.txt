@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 2.8)
+set(OpenCV_DIR /home/koyla/usr/opencv/share/OpenCV/)
+set (CMAKE_CXX_STANDARD 11)
+project( DisplayImage )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( DisplayImage main.cc )
+target_link_libraries( DisplayImage ${OpenCV_LIBS} )
